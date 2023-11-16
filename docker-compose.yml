@@ -1,0 +1,22 @@
+version: '3.8'
+
+volumes:
+  postgres-db:
+
+networks:
+  goapi:
+    driver: bridge
+
+services:
+  db: 
+    image: postgres:alpine
+    ports: 
+      - "${DB_PORT}:${DB_PORT}"
+    networks:
+      - goapi
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
