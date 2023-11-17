@@ -54,9 +54,7 @@ func MangaList(c *gin.Context) {
 
 	initializers.DB.Order("title asc").Limit(30).Offset(offset).Find(&mangas)
 
-	c.JSON(http.StatusOK, gin.H{
-		"mangas": mangas,
-	})
+	c.JSON(http.StatusOK, gin.H{"mangas": mangas})
 }
 
 func MangaListDeleted(c *gin.Context) {
@@ -70,9 +68,7 @@ func MangaListDeleted(c *gin.Context) {
 
 	initializers.DB.Unscoped().Order("title asc").Limit(30).Offset(offset).Find(&mangas)
 
-	c.JSON(http.StatusOK, gin.H{
-		"mangas": mangas,
-	})
+	c.JSON(http.StatusOK, gin.H{"mangas": mangas})
 }
 
 func MangaGet(c *gin.Context) {
@@ -86,9 +82,7 @@ func MangaGet(c *gin.Context) {
 
 	initializers.DB.Preload("Chapters").First(&manga, id)
 
-	c.JSON(http.StatusOK, gin.H{
-		"manga": manga,
-	})
+	c.JSON(http.StatusOK, gin.H{"manga": manga})
 }
 
 func MangaUpdate(c *gin.Context) {
@@ -107,16 +101,55 @@ func MangaUpdate(c *gin.Context) {
 		Description: body.Description,
 		Synopsis:    body.Description,
 		Tags:        body.Tags,
-		ImageCover:  body.ImageCover,
 	})
 
-	c.JSON(http.StatusOK, gin.H{
-		"manga": manga,
-	})
+	c.JSON(http.StatusOK, gin.H{"manga": manga})
+}
+
+func MangaUpdateImage(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid manga ID"})
+		return
+	}
+
+	_, coverImage, err := parseRequest(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var manga models.Manga
+	initializers.DB.Preload("Chapters").First(&manga, id)
+
+	imageCover := manga.ImageCover
+
+	// Delete cover image from S3
+	if err := utils.DeleteCoverImageFromS3(imageCover); err != nil {
+		fmt.Printf("Error deleting cover image from S3: %v\n", err)
+		return
+	}
+
+	coverImagePath, err := utils.SaveCoverImage(c, coverImage, id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	defer utils.RemoveFileServerSide(coverImagePath)
+
+	if err := utils.UploadCoverImageToS3(coverImagePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	initializers.DB.Model(&manga).Updates(models.Manga{ImageCover: coverImagePath})
+
+	c.JSON(http.StatusOK, gin.H{"manga": manga})
 }
 
 func MangaDelete(c *gin.Context) {
-	mangaID, err := uuid.Parse(c.Param("id"))
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid manga ID"})
 		return
@@ -124,7 +157,7 @@ func MangaDelete(c *gin.Context) {
 
 	// Fetch manga from the database
 	var manga models.Manga
-	if err := initializers.DB.Where("id = ?", mangaID).First(&manga).Error; err != nil {
+	if err := initializers.DB.First(&manga, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Manga not found"})
 		return
 	}
