@@ -17,6 +17,7 @@ func init() {
 func main() {
 	r := gin.Default()
 	r.GET("/manga/page/:page", controllers.MangaList)
+	r.GET("/manga-deleted/page/:page", controllers.MangaListDeleted)
 	r.POST("/manga", controllers.MangaCreate)
 	r.GET("/manga/:id", controllers.MangaGet)
 	r.PUT("/manga/:id", controllers.MangaUpdate)

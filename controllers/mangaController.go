@@ -52,7 +52,23 @@ func MangaList(c *gin.Context) {
 
 	var mangas []models.Manga
 
-	initializers.DB.Order("tittle asc").Limit(30).Offset(offset).Find(&mangas)
+	initializers.DB.Order("title asc").Limit(30).Offset(offset).Find(&mangas)
+
+	c.JSON(http.StatusOK, gin.H{
+		"mangas": mangas,
+	})
+}
+
+func MangaListDeleted(c *gin.Context) {
+	offset, err := strconv.Atoi(c.Param("page"))
+	if err != nil {
+		// chama função de log
+		offset = 0
+	}
+
+	var mangas []models.Manga
+
+	initializers.DB.Unscoped().Order("title asc").Limit(30).Offset(offset).Find(&mangas)
 
 	c.JSON(http.StatusOK, gin.H{
 		"mangas": mangas,
