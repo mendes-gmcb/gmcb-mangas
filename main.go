@@ -2,16 +2,15 @@ package main
 
 import (
 	"trabalho/controllers"
-	"trabalho/initializers"
+	"trabalho/db"
+	"trabalho/env"
 
 	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	initializers.LoadEnvVariables()
-	initializers.ConectToDB()
-	initializers.ConectToS3()
-	initializers.ConectUploaderToS3()
+	env.Load()
+	db.Load()
 }
 
 func main() {
