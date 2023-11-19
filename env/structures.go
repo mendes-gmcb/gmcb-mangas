@@ -12,7 +12,7 @@ type dbConfig struct {
 }
 
 type awsConfig struct {
-	AcessKey  string `env:"AWS_ACCESS_KEY"`
+	AccessKey string `env:"AWS_ACCESS_KEY"`
 	SecretKey string `env:"AWS_SECRET_KEY"`
 	Region    string `env:"AWS_REGION"`
 }
