@@ -11,4 +11,6 @@ type Chapter struct {
 	MangaID       uuid.UUID
 	ChapterNumber int
 	NumPages      int
+
+	Images []ChapterImage `gorm:"constraint:OnDelete:CASCADE; foreignKey:ChapterID"`
 }
