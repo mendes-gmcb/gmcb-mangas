@@ -41,9 +41,22 @@ func ChapterCreate(c *gin.Context) {
 }
 
 func ChapterList(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	offset, err := strconv.Atoi(c.Param("page"))
+	if err != nil {
+		offset = 0
+	}
+
+	mangaID, err := uuid.Parse(c.Param("mangaid"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid manga ID"})
+		return
+	}
+
+	var chapters []models.Chapter
+
+	initializers.DB.Where("manga_id", mangaID).Order("chapter_number asc").Limit(100).Offset(offset).Find(&chapters)
+
+	c.JSON(http.StatusOK, gin.H{"chapters": chapters})
 }
 
 func ChapterGet(c *gin.Context) {

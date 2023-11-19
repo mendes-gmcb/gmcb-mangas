@@ -27,8 +27,8 @@ func main() {
 	r.PATCH("/manga/:id", controllers.MangaUpdateImage)
 	r.DELETE("/manga/:id", controllers.MangaDelete)
 
-	r.GET("/chapter/page/:page/manga/:mangaID", controllers.ChapterList)
-	r.GET("/chapter-deleted/page/:page/manga/:mangaID", controllers.ChapterList)
+	r.GET("/chapter/page/:page/manga/:mangaid", controllers.ChapterList)
+	r.GET("/chapter-deleted/page/:page/manga/:mangaid", controllers.ChapterListDeleted)
 	r.POST("/chapter", controllers.ChapterCreate)
 	r.GET("/chapter/:id", controllers.ChapterGet)
 	r.PATCH("/chapter/:id", controllers.ChapterUpdate)
