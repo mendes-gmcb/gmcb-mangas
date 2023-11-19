@@ -4,6 +4,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"sync"
 	"trabalho/initializers"
 	"trabalho/models"
 	"trabalho/utils"
@@ -80,9 +81,40 @@ func ChapterUpdate(c *gin.Context) {
 }
 
 func ChapterDelete(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	var wg sync.WaitGroup
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid chapter ID"})
+		return
+	}
+
+	var chapter models.Chapter
+	if err := initializers.DB.Preload("Images").First(&chapter, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Manga not found"})
+		return
+	}
+
+	images := chapter.Images
+
+	// Delete manga from the database
+	if err := initializers.DB.Delete(&chapter).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete manga"})
+		return
+	}
+
+	err_cn := make(chan error)
+	semaphore := make(chan struct{}, 50)
+
+	for _, image := range images {
+		wg.Add(1)
+		semaphore <- struct{}{}
+
+		go utils.DeleteFileFromS3(image.ImagePath, &wg, err_cn, semaphore)
+	}
+	wg.Wait()
+
+	c.JSON(http.StatusOK, gin.H{"message": "Chapter deleted successfully"})
 }
 
 func parseChapterRequest(c *gin.Context) (body models.Chapter, files []*multipart.FileHeader) {

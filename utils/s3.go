@@ -63,5 +63,21 @@ func DeleteCoverImageFromS3(coverImagePath string) error {
 
 	_, err := initializers.Client.DeleteObject(&s3Object)
 	return err
+}
 
+func DeleteFileFromS3(
+	coverImagePath string,
+	wg *sync.WaitGroup,
+	err chan<- error,
+	semaphore <-chan struct{},
+) {
+	defer wg.Done()
+	s3Object := s3.DeleteObjectInput{
+		Bucket: aws.String(os.Getenv("AWS_BUCKET_NAME")),
+		Key:    aws.String(coverImagePath),
+	}
+
+	_, erro := initializers.Client.DeleteObject(&s3Object)
+	err <- erro
+	<-semaphore
 }
