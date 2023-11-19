@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"io"
+	"mime/multipart"
 	"os"
+	"sync"
 	"trabalho/initializers"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,13 +19,39 @@ func UploadCoverImageToS3(coverImagePath string) error {
 	}
 	defer file.Close()
 
+	err = upload(file, coverImagePath)
+	return err
+}
+
+func UploadMultipleImagesToS3(
+	file *multipart.FileHeader,
+	filepath string,
+	wg *sync.WaitGroup,
+	err_cn chan<- error,
+	semaphore <-chan struct{},
+) {
+	defer wg.Done()
+
+	fileO, err := file.Open()
+	if err != nil {
+		err_cn <- err
+		<-semaphore
+		return
+	}
+
+	err = upload(fileO, filepath)
+	err_cn <- err
+	<-semaphore
+}
+
+func upload(file io.Reader, filepath string) error {
 	s3Object := s3manager.UploadInput{
 		Bucket: aws.String(os.Getenv("AWS_BUCKET_NAME")),
-		Key:    aws.String(coverImagePath),
+		Key:    aws.String(filepath),
 		Body:   file,
 	}
 
-	_, err = initializers.Uploader.Upload(&s3Object)
+	_, err := initializers.Uploader.Upload(&s3Object)
 	return err
 }
 
