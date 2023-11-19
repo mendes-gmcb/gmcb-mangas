@@ -60,9 +60,17 @@ func ChapterList(c *gin.Context) {
 }
 
 func ChapterGet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid chapter ID"})
+		return
+	}
+
+	var chapter models.Chapter
+
+	initializers.DB.Preload("Images").First(&chapter, id)
+
+	c.JSON(http.StatusOK, gin.H{"chapter": chapter})
 }
 
 func ChapterUpdate(c *gin.Context) {
