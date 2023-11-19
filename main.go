@@ -20,7 +20,6 @@ func main() {
 	r.MaxMultipartMemory = 256 << 20
 
 	r.GET("/manga/page/:page", controllers.MangaList)
-	r.GET("/manga-deleted/page/:page", controllers.MangaListDeleted)
 	r.POST("/manga", controllers.MangaCreate)
 	r.GET("/manga/:id", controllers.MangaGet)
 	r.PUT("/manga/:id", controllers.MangaUpdate)
@@ -28,7 +27,6 @@ func main() {
 	r.DELETE("/manga/:id", controllers.MangaDelete)
 
 	r.GET("/chapter/page/:page/manga/:mangaid", controllers.ChapterList)
-	r.GET("/chapter-deleted/page/:page/manga/:mangaid", controllers.ChapterListDeleted)
 	r.POST("/chapter", controllers.ChapterCreate)
 	r.GET("/chapter/:id", controllers.ChapterGet)
 	r.PATCH("/chapter/:id", controllers.ChapterUpdate)

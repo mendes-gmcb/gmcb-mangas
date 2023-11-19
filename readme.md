@@ -16,9 +16,9 @@ GMCB Manga API is a Go-based RESTful API that provides manga-related functionali
 
 ## Features
 
-- **Manga Management:** Create, retrieve, retrieve deleted, update, update image, and delete manga information.
+- **Manga Management:** Create, retrieve, update, update image, and delete manga information.
 - **Chapter Management:** Manage manga chapters, including the number of pages and images.
-- **Image Handling:** Upload images to AWS S3 and perform image size validation.
+- **Image Handling:** Upload images to AWS S3.
 
 ## Getting Started
 
@@ -34,8 +34,8 @@ GMCB Manga API is a Go-based RESTful API that provides manga-related functionali
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/mendes-gmcb/gmcb-manga-api.git
-   cd gmcb-manga-api
+   git clone https://github.com/mendes-gmcb/gmcb-mangas.git
+   cd gmcb-mangas
    ```
 
 2. Build the application:
@@ -50,7 +50,7 @@ GMCB Manga API is a Go-based RESTful API that provides manga-related functionali
 
 4. Run the application:
   ```bash
-  ./gmcb-manga-api
+  ./gmcb-mangas
   ```
 
 ### Configuration
