@@ -86,7 +86,11 @@ func MangaGet(c *gin.Context) {
 }
 
 func MangaUpdate(c *gin.Context) {
-	id := c.Param("id")
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid manga ID"})
+		return
+	}
 
 	var body models.Manga
 
