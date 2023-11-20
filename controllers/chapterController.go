@@ -13,6 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type chaptersOrder struct {
+	ChapterID uuid.UUID `json:"chapterID"`
+	Order     int       `json:"Order"`
+}
+
 func ChapterCreate(c *gin.Context) {
 	body, files := parseChapterRequest(c)
 
@@ -71,10 +76,61 @@ func ChapterGet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"chapter": chapter})
 }
 
-func ChapterUpdate(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+func ChapterUpdateOrder(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid manga ID"})
+		return
+	}
+
+	var chapters []chaptersOrder
+
+	c.Bind(&chapters)
+	if len(chapters) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No chapters provided"})
+		return
+	}
+
+	// Begin a transaction
+	tx := initializers.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Iterate through the received chapters and update their order
+	for _, chapter := range chapters {
+		// fmt.Println(chapter)
+		if err := tx.Model(&models.Chapter{}).
+			Where("id = ? AND manga_id = ?", chapter.ChapterID, id).
+			Update("chapter_number", nil).Error; err != nil {
+
+			// Rollback the transaction on error
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update chapter order"})
+			return
+		}
+	}
+
+	// Iterate through the received chapters and update their order
+	for _, chapter := range chapters {
+		// fmt.Println(chapter)
+		if err := tx.Model(&models.Chapter{}).
+			Where("id = ? AND manga_id = ?", chapter.ChapterID, id).
+			Update("chapter_number", chapter.Order).Error; err != nil {
+
+			// Rollback the transaction on error
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update chapter order"})
+			return
+		}
+	}
+
+	// Commit the transaction
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{"message": "Chapter order updated successfully"})
 }
 
 func ChapterDelete(c *gin.Context) {
