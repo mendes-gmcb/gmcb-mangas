@@ -32,9 +32,8 @@ func main() {
 	r.PUT("/chapter/:id", controllers.ChapterUpdateOrder)
 	r.DELETE("/chapter/:id", controllers.ChapterDelete)
 
-	r.GET("/chapter-image/page/:page", controllers.ChapterImageList)
-	r.GET("/chapter-image/:id", controllers.ChapterImageGet)
-	r.PUT("/chapter-image/:id", controllers.ChapterImageUpdate)
+	r.POST("/chapter-image", controllers.ChapterImageCreate)
+	r.PATCH("/chapter-image/:id", controllers.ChapterImageUpdate)
 	r.DELETE("/chapter-image/:id", controllers.ChapterImageDelete)
 
 	r.Run()
