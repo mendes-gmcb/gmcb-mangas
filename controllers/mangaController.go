@@ -87,9 +87,9 @@ func MangaUpdate(c *gin.Context) {
 
 	initializers.DB.Model(&manga).Updates(models.Manga{
 		Author:      body.Author,
-		Title:       body.Description,
+		Title:       body.Title,
 		Description: body.Description,
-		Synopsis:    body.Description,
+		Synopsis:    body.Synopsis,
 		Tags:        body.Tags,
 	})
 
