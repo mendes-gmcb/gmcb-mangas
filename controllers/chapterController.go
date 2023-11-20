@@ -14,12 +14,9 @@ import (
 )
 
 func ChapterCreate(c *gin.Context) {
-	cic_cn := make(chan bool)
 	body, files := parseChapterRequest(c)
 
 	chapterID := utils.GenerateUUID()
-
-	go ChapterImagesCreate(files, body.MangaID, chapterID, cic_cn)
 
 	chapter := models.Chapter{
 		ID:            chapterID,
@@ -34,7 +31,7 @@ func ChapterCreate(c *gin.Context) {
 		return
 	}
 
-	<-cic_cn
+	ChapterImagesCreate(files, body.MangaID, chapterID)
 
 	initializers.DB.Preload("Images").First(&chapter, chapterID)
 

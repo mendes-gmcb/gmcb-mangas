@@ -47,7 +47,7 @@ func ChapterImageDelete(c *gin.Context) {
 // 	file
 // }
 
-func ChapterImagesCreate(files []*multipart.FileHeader, mangaID, chapterID uuid.UUID, cn chan<- bool) {
+func ChapterImagesCreate(files []*multipart.FileHeader, mangaID, chapterID uuid.UUID) {
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, 50)
 	var chapterImages []models.ChapterImage
@@ -75,6 +75,4 @@ func ChapterImagesCreate(files []*multipart.FileHeader, mangaID, chapterID uuid.
 	initializers.DB.Create(chapterImages)
 
 	wg.Wait()
-
-	cn <- true
 }
