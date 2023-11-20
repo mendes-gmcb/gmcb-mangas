@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -27,20 +28,21 @@ func UploadMultipleImagesToS3(
 	file *multipart.FileHeader,
 	filepath string,
 	wg *sync.WaitGroup,
-	err_cn chan<- error,
 	semaphore <-chan struct{},
 ) {
 	defer wg.Done()
 
 	fileO, err := file.Open()
 	if err != nil {
-		err_cn <- err
+		fmt.Printf("ERROR: %v", err)
 		<-semaphore
 		return
 	}
 
 	err = upload(fileO, filepath)
-	err_cn <- err
+	if err != nil {
+		fmt.Printf("ERROR: %v", err)
+	}
 	<-semaphore
 }
 
@@ -68,7 +70,6 @@ func DeleteCoverImageFromS3(coverImagePath string) error {
 func DeleteFileFromS3(
 	coverImagePath string,
 	wg *sync.WaitGroup,
-	err chan<- error,
 	semaphore <-chan struct{},
 ) {
 	defer wg.Done()
@@ -77,7 +78,7 @@ func DeleteFileFromS3(
 		Key:    aws.String(coverImagePath),
 	}
 
-	_, erro := initializers.Client.DeleteObject(&s3Object)
-	err <- erro
+	_, err := initializers.Client.DeleteObject(&s3Object)
+	fmt.Printf("ERROR: %v", err)
 	<-semaphore
 }

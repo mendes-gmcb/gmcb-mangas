@@ -49,7 +49,6 @@ func ChapterImageDelete(c *gin.Context) {
 
 func ChapterImagesCreate(files []*multipart.FileHeader, mangaID, chapterID uuid.UUID, cn chan<- bool) {
 	var wg sync.WaitGroup
-	err_cn := make(chan error)
 	semaphore := make(chan struct{}, 50)
 	var chapterImages []models.ChapterImage
 
@@ -61,11 +60,7 @@ func ChapterImagesCreate(files []*multipart.FileHeader, mangaID, chapterID uuid.
 
 		filepath := fmt.Sprintf("/mangas/%s/%s/%s-%s", mangaID, chapterID, chapterImageID, file.Filename)
 
-		go utils.UploadMultipleImagesToS3(file, filepath, &wg, err_cn, semaphore)
-
-		if <-err_cn != nil {
-			continue
-		}
+		go utils.UploadMultipleImagesToS3(file, filepath, &wg, semaphore)
 
 		chapterImage := models.ChapterImage{
 			ID:         chapterImageID,

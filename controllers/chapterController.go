@@ -103,15 +103,15 @@ func ChapterDelete(c *gin.Context) {
 		return
 	}
 
-	err_cn := make(chan error)
 	semaphore := make(chan struct{}, 50)
 
 	for _, image := range images {
 		wg.Add(1)
 		semaphore <- struct{}{}
 
-		go utils.DeleteFileFromS3(image.ImagePath, &wg, err_cn, semaphore)
+		go utils.DeleteFileFromS3(image.ImagePath, &wg, semaphore)
 	}
+
 	wg.Wait()
 
 	c.JSON(http.StatusOK, gin.H{"message": "Chapter deleted successfully"})
