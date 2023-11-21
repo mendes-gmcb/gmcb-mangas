@@ -118,20 +118,48 @@ func ChapterImageCreate(c *gin.Context) {
 }
 
 func ChapterImageUpdate(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+	// get file info
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid image ID"})
+		return
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		return
+	}
+
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, 50)
+	wg.Add(1)
+	semaphore <- struct{}{}
+
+	var image models.ChapterImage
+	initializers.DB.Find(&image, id)
+
+	// Delete image from S3
+	if err := utils.DeleteCoverImageFromS3(image.ImagePath); err != nil {
+		fmt.Printf("Error deleting image from S3: %v\n", err)
+	}
+
+	utils.UploadMultipleImagesToS3(file, image.ImagePath, &wg, semaphore)
+
+	wg.Wait()
+
+	// upload image
+	c.JSON(http.StatusOK, gin.H{"message": "Image updated on s3 successfully"})
 }
 
 func ChapterImageDelete(c *gin.Context) {
+	// get info
+	// reorder images to remove the image
+	// remove image from s3
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
-
-// func upload(fileinfo os.FileInfo) {
-// 	file
-// }
 
 func ChapterImagesCreate(files []*multipart.FileHeader, mangaID, chapterID uuid.UUID) {
 	var wg sync.WaitGroup
