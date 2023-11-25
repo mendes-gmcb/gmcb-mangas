@@ -110,7 +110,7 @@ func MangaUpdateImage(c *gin.Context) {
 	}
 
 	var manga models.Manga
-	initializers.DB.Preload("Chapters").First(&manga, id)
+	initializers.DB.First(&manga, id)
 
 	imageCover := manga.ImageCover
 
