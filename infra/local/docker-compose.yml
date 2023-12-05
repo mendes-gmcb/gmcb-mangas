@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 volumes:
   postgres-db:
@@ -8,9 +8,9 @@ networks:
     driver: bridge
 
 services:
-  db: 
+  db:
     image: postgres:alpine
-    ports: 
+    ports:
       - "${DB_PORT}:${DB_PORT}"
     networks:
       - goapi

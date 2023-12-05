@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 	"trabalho/initializers"
@@ -168,15 +167,6 @@ func MangaDelete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Manga deleted successfully"})
 }
 
-func parseRequest(c *gin.Context) (models.Manga, *multipart.FileHeader, error) {
-	var body models.Manga
-	c.Bind(&body)
-	coverImage, err := c.FormFile("Image_cover")
-	if err != nil {
-		return models.Manga{}, nil, err
-	}
-	return body, coverImage, nil
-}
 
 func createManga(body models.Manga, coverImagePath string, mangaID uuid.UUID) models.Manga {
 	return models.Manga{
